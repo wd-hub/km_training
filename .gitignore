@@ -1,0 +1,7 @@
+# ignore all the logs directory
+logs*/
+
+.idea/*
+__pycache__/
+
+*.vti
