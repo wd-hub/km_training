@@ -6,7 +6,7 @@ import collections
 import numpy as np
 from glob import glob
 
-dataset = '/home/dong/Documents/3D_Matching/Dataset/TUM/rgbd_dataset_freiburg3_long_office_household/patches'
+dataset = '/home/dong/Documents/3D_Matching/training_data_generation/Data/rgbd_dataset_freiburg3_long_office_household/patches'
 num_pairs = 5000
 labels = []
 

@@ -7,8 +7,8 @@ from glob import glob
 import os
 import matplotlib.pyplot as plt
 
-from Hardnet__ import Hardnet
-from ubc import UBCDataset
+from tfeat import TFeat
+from ubc_tfeat import UBCDataset
 
 from eval_metrics import ErrorRateAt95Recall
 from preprocess import normalize_batch
@@ -17,9 +17,9 @@ parser = argparse.ArgumentParser(description='Tensorflow HardNet')
 parser.add_argument('--image_size', default=32, help='The size of the images to process')
 parser.add_argument('--num_channels', default=1, help="""The number of channels in the images to process""")
 parser.add_argument('--batch_size', default=128, help="""The size of the mini-batch""")
-parser.add_argument('--test_name', default='notredame', help="""The name of the dataset used to for training""")
+parser.add_argument('--test_name', default='liberty', help="""The name of the dataset used to for training""")
 parser.add_argument('--data_dir', default='/home/dong/Documents/3D_Matching/Dataset/UBC', help="""The default path to the patches dataset""")
-parser.add_argument('--model_file', default='./logs_liberty_GOR', help="""The filename of the model to evaluate""")
+parser.add_argument('--model_file', default='./logs_tfeat_notredame_var', help="""The filename of the model to evaluate""")
 parser.add_argument('--output_name', default='out.txt', help="""The default path to save the descriptor""")
 args = parser.parse_args()
 
@@ -65,17 +65,10 @@ def run_evaluation():
         inputs2_pl = tf.placeholder(dtype=tf.float32, shape=tensor_shape, name='inputs2_pl')
         is_training = tf.placeholder(dtype=tf.bool)
 
-        if enMetricNet:
-            inputs1_m = tf.placeholder(dtype=tf.float32, shape=[None, 128], name='inputs1_m')
-            inputs2_m = tf.placeholder(dtype=tf.float32, shape=[None, 128], name='inputs2_m')
-
     # Creating the architecture
-    tfeat_architecture = Hardnet(NUM_CHANNELS)
+    tfeat_architecture = TFeat(NUM_CHANNELS)
     tfeat_inputs1 = tfeat_architecture.build(inputs1_pl, is_training)
     tfeat_inputs2 = tfeat_architecture.build(inputs2_pl, is_training, reuse=True)
-
-    if enMetricNet:
-        mfeat_output = tfeat_architecture.metric(inputs1_m, inputs2_m)
 
     # Create a saver for writing training checkpoints.
     saver = tf.train.Saver()
@@ -126,18 +119,11 @@ def run_evaluation():
                                               is_training: False
                                           })
 
-                if enMetricNet:
-                    match_descision = sess.run(mfeat_output,
-                                               feed_dict={inputs1_m: list(descs1), inputs2_m: list(descs2)})
-
                 # compute euclidean distances between descriptors
                 for i in range(args.batch_size):
                     idx = x * args.batch_size + i
                     dists[idx] = np.linalg.norm(descs1[i, :] - descs2[i, :])
                     labels[idx] = batch[i, 2]
-                    if enMetricNet:
-                        dists_m[idx] = match_descision[i]
-
 
             # compute the false positives rate
             fpr95 = ErrorRateAt95Recall(labels, dists)
@@ -145,9 +131,6 @@ def run_evaluation():
             distDistribution(labels, dists)
             if is_write:
                 save_write.write(str(fpr95)+'\n')
-            if enMetricNet:
-                fpr95_m = ErrorRateAt95Recall(labels, dists_m)
-                print('%s-->FRP95: %s' % (model, fpr95_m))
         if is_write:
             save_write.close()
 

@@ -65,7 +65,7 @@ def loss_margin_min(anchor, positive, anchor_swap = False, anchor_ave = False, m
     M2 = tf.reduce_mean(tf.multiply(np_inner_product_matrix, np_inner_product_matrix))
     loss_gor = M1 + tf.maximum(0., tf.subtract(M2, 1/anchor.get_shape().as_list()[1]))
 
-    loss = loss + loss_gor
+    loss = loss# + loss_gor
     watchParam['loss_gor'] = loss_gor
     watchParam['M1'] = M1
     watchParam['M2'] = M2
@@ -102,4 +102,51 @@ def loss_margin_cosine(anchor, positive, anchor_swap = False, anchor_ave = False
     params['loss'] = loss
     return params
 
+############################### tfeat loss #######################################
+def compute_euclidean_distance(x, y):
+    """
+    Computes the euclidean distance between two tensorflow variables
+    """
 
+    d = tf.square(tf.subtract(x, y))
+    d = tf.sqrt(tf.reduce_sum(d, 1)) # What about the axis ???
+    return d
+
+
+def compute_triplet_loss(anchor_feature, positive_feature, negative_feature, margin):
+    """
+    Compute the contrastive loss as in
+
+    L = || f_a - f_p ||^2 - || f_a - f_n ||^2 + m
+
+    **Parameters**
+     anchor_feature:
+     positive_feature:
+     negative_feature:
+     margin: Triplet margin
+
+    **Returns**
+     Return the loss operation
+    """
+
+    with tf.name_scope("triplet_loss"):
+        d_p_squared = tf.reduce_sum(tf.square(anchor_feature - positive_feature), 1)
+        d_n_squared = tf.reduce_sum(tf.square(anchor_feature - negative_feature), 1)
+
+        dist_hinge = tf.maximum(0., margin + d_p_squared - d_n_squared)
+        mean_pos, var_pos = tf.nn.moments(d_p_squared, axes=[0])
+        mean_neg, var_neg = tf.nn.moments(d_n_squared, axes=[0])
+        loss = tf.reduce_mean(dist_hinge)+(var_pos+var_neg)
+
+        return loss, tf.reduce_mean(d_p_squared), tf.reduce_mean(d_n_squared)
+
+def compute_triplet_loss_swap(anchor_feature, positive_feature, negative_feature, margin):
+    with tf.name_scope("triplet_loss_swap"):
+        d_p_squared = tf.reduce_sum(tf.square(anchor_feature - positive_feature), 1)
+        d_n_squared = tf.reduce_sum(tf.square(anchor_feature - negative_feature), 1)
+        d_h_squared = tf.reduce_sum(tf.square(positive_feature - negative_feature), 1)
+
+        d_star = tf.minimum(d_n_squared, d_h_squared)
+        loss = tf.maximum(0., margin + d_p_squared - d_star)
+
+        return tf.reduce_mean(loss), tf.reduce_mean(d_p_squared), tf.reduce_mean(d_n_squared)

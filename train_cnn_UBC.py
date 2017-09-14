@@ -279,7 +279,7 @@ def main(logger):
 #     run_training()
 
 if __name__ == '__main__':
-    LOG_DIR = os.path.join(args.log_dir+'_'+args.train_name+'_GOR_var')   # e.g. logs_rgb
+    LOG_DIR = os.path.join(args.log_dir+'_'+args.train_name+'_GOR')   # e.g. logs_rgb
 
     if os.path.isfile(LOG_DIR):
         os.remove(LOG_DIR)  # remove the file

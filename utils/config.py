@@ -22,14 +22,14 @@ def get_params(patch_type):
 
     params['patch_size'] = 32
     params['batch_size'] = 128
-    params['epochs'] = 8
-    params['n_triplets'] = 5000000
-    params['max_walls'] = 2000
+    params['epochs'] = 20
+    params['n_triplets'] = 1000000
+    params['max_walls'] = 1500
 
-    params['lr'] = 0.1
+    params['lr'] = 0.1   # 0.1 for rgb
     params['lr_m'] = 0.01
     params['lr_decay'] = 1e-6
     params['wd'] = 1e-4
-    params['margin'] = 2
+    params['margin'] = 1
 
     return params

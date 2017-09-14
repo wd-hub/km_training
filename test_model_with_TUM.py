@@ -14,8 +14,8 @@ from preprocess import normalize_batch
 from utils.config import get_params
 
 parser = argparse.ArgumentParser(description='Tensorflow HardNet')
-parser.add_argument('--patch_type', default='rgb', help='patch type (gray, rgb, dep, rgbd)')
-parser.add_argument('--model_file', default='./logs_rgb', help="""The filename of the model to evaluate""")
+parser.add_argument('--patch_type', default='dep', help='patch type (gray, rgb, dep, rgbd)')
+parser.add_argument('--model_file', default='./logs_depth', help="""The filename of the model to evaluate""")
 parser.add_argument('--train_dir', default='/home/dong/Documents/3D_Matching/Dataset/TUM',
                     help="""The name of the dataset used to for training""")
 args = parser.parse_args()
